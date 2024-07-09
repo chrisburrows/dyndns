@@ -113,7 +113,6 @@ def on_connect(client, userdata, flags, rc):
     log.info("MQTT: Connected to broker with result code " + str(rc))
 
     client.publish(MQTT_BASE_TOPIC + "/status", payload="online")
-    #client.subscribe(MQTT_BASE_TOPIC + "/last-problem-time")
 
     # update discovery each time we connect
     publish_home_assistant_discovery(client)
@@ -264,38 +263,6 @@ def publish_home_assistant_discovery(client):
     client.publish(discovery_topic, payload=json.dumps(payload), retain=True)
 
 
-
-
-
-
-
-#
-    #payload = {
-        #"name": "DynDNS Last Problem Time",
-        #"state_topic": "{base}/last-problem-time".format(base=MQTT_BASE_TOPIC),
-        #"availability_topic": "{base}/status".format(base=MQTT_BASE_TOPIC),
-        #"payload_available": "online",
-        #"payload_not_available": "offline",
-        #"unique_id": "{host}-last-problem-time".format(host=platform.node()),
-        #"icon": "mdi:clock-outline"
-    #}
-    #discovery_topic = "homeassistant/sensor/dyndns-last-problem-time/config"
-    #client.publish(discovery_topic, payload=json.dumps(payload), retain=True)
-#
-    #payload = {
-        #"name": "DynDNS Entry Problem",
-        #"state_topic": "{base}/published-entry-problem".format(base=MQTT_BASE_TOPIC),
-        #"availability_topic": "{base}/status".format(base=MQTT_BASE_TOPIC),
-        #"payload_available": "online",
-        #"payload_not_available": "offline",
-        #"device_class": "problem",
-        #"unique_id": "{host}-dyndns-published-entry-problem".format(host=platform.node()),
-        #"icon": HA_ICON
-    #}
-    #discovery_topic = "homeassistant/binary_sensor/dyndns-published-entry/config"
-    #client.publish(discovery_topic, payload=json.dumps(payload), retain=True)
-
-
 def dns_lookup():
     try:
         return set([str(i[4][0]) for i in socket.getaddrinfo(DYNDNS_DOMAIN, 80)])
@@ -310,10 +277,8 @@ def setup_mqtt():
     client.on_connect = on_connect
     client.on_message = on_message
     client.max_queued_messages_set(10)
-    #client.connect_async(MQTT_BROKER, 1883, keepalive=60)
     client.will_set(MQTT_BASE_TOPIC + "/status", payload="offline")
     client.connect(MQTT_BROKER, 1883, keepalive=UPDATE_INTERVAL * 3)
-    #client.loop(timeout=UPDATE_INTERVAL)
     return client
 
 
@@ -331,7 +296,6 @@ def update():
 
             status = update_dns()
             record_dyndns_update(client, status)
-            #publish_status(client, our_ip, status)
 
             iterations_per_forced_update = int(FORCE_UPDATE_INTERVAL / UPDATE_INTERVAL)
 
@@ -351,22 +315,13 @@ def update():
                             status = update_dns()
                             record_dyndns_update(client, status)
                             record_ip_out_of_sync(client, ok=False)
-                            #publish_status(client, our_ip, status)
-                            #if not status:
-                            #    record_problem_time(client, datetime.now())
                         else:
                             record_ip_out_of_sync(client, ok=True)
-                    #else:
-                        # problem with an API call
-                    #    if last_problem_time is None:
-                    #        record_problem_time(client, datetime.now())
 
                     time.sleep(UPDATE_INTERVAL)
-                    #client.loop(timeout=UPDATE_INTERVAL)
 
                 status = update_dns()
                 publish_status(client, our_ip, status)
-                #client.loop(timeout=UPDATE_INTERVAL)
                 time.sleep(UPDATE_INTERVAL)
 
         except KeyboardInterrupt:
