@@ -1,0 +1,16 @@
+[Unit]
+Description=DynDNS Updater
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+User=nobody
+EnvironmentFile=/usr/local/etc/dyndns.env
+ExecStart=/usr/local/bin/dyndns.py
+
+[Install]
+WantedBy=multi-user.target
+
