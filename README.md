@@ -1,4 +1,4 @@
-# duckdns
+# DynDNS
 
 Simple python script to maintain an external IP address with DynamicDNS.
 
