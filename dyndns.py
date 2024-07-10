@@ -112,7 +112,7 @@ def on_connect(client, userdata, flags, rc):
 
     log.info("MQTT: Connected to broker with result code " + str(rc))
 
-    client.publish(MQTT_BASE_TOPIC + "/status", payload="online")
+    client.publish(MQTT_BASE_TOPIC + "/status", payload="online", retain=True)
 
     # update discovery each time we connect
     publish_home_assistant_discovery(client)
@@ -148,7 +148,7 @@ def record_problem(client, topic: str, ok: bool, when = datetime.now()):
         last_problem_time = when
         problem_status[topic] = ok
         client.publish(MQTT_BASE_TOPIC + "/last-problem-time", payload=str(when.isoformat()), retain=True)
-        client.publish(MQTT_BASE_TOPIC + topic, payload="OFF" if ok else "ON")
+        client.publish(MQTT_BASE_TOPIC + topic, payload="OFF" if ok else "ON", retain=True)
     else:
         log.debug("Skipping MQTT for {topic} {ok} - state unchanged".format(topic=topic, ok=ok))
 
